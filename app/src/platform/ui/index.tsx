@@ -113,7 +113,7 @@ export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
 export function Table({ head, children, empty }: { head: ReactNode; children: ReactNode; empty?: boolean }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
-      <table className="w-full text-sm">
+      <table className="w-full min-w-[56rem] text-sm">
         <thead className="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
           <tr>{head}</tr>
         </thead>

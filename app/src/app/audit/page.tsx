@@ -50,7 +50,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
             <Td><Badge tone="blue">{e.app}</Badge></Td>
             <Td mono>{e.action}</Td>
             <Td mono>{e.entityType}<div className="text-slate-500">{e.entityId}</div></Td>
-            <Td mono><div className="max-w-xs break-all text-slate-600">{e.before && <div className="text-rose-700">− {e.before}</div>}{e.after && <div className="text-emerald-700">+ {e.after}</div>}</div></Td>
+            <Td mono><div className="min-w-[14rem] max-w-md break-all text-slate-600">{e.before && <div className="text-rose-700">− {e.before}</div>}{e.after && <div className="text-emerald-700">+ {e.after}</div>}</div></Td>
             <Td mono><span title={e.hash} className="text-slate-400">{e.hash.slice(0, 10)}…</span></Td>
           </tr>
         ))}
