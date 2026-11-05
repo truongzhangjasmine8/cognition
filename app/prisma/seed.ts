@@ -20,7 +20,14 @@ function pick<T>(arr: T[], i: number): T {
   return arr[i % arr.length];
 }
 
+// `npm run setup` seeds an empty database and leaves existing data alone.
+// `npm run db:reset` (RESET=1) wipes everything first.
 async function main() {
+  const existing = await db.user.count();
+  if (existing > 0 && process.env.RESET !== "1") {
+    console.log(`Database already has ${existing} users; skipping seed. Run \`npm run db:reset\` to start over.`);
+    return;
+  }
   await db.auditEvent.deleteMany();
   await db.approvalRequest.deleteMany();
   await db.chargeback.deleteMany();
@@ -71,6 +78,18 @@ async function main() {
     };
   });
   await db.refund.createMany({ data: refunds });
+  // Every seeded refund that is waiting for approval has a matching queue item.
+  for (const r of refunds.filter((r) => r.status === "pending_approval")) {
+    const req = await db.approvalRequest.create({
+      data: {
+        app: "refunds", kind: "refund.large", entityType: "Refund", entityId: r.id,
+        summary: `Refund $${(r.amountCents / 100).toFixed(2)} to ${r.customerName} (order ${r.orderId}): ${r.reason}`,
+        payload: JSON.stringify({ refundId: r.id }),
+        requestedById: r.requestedById, requestedByName: r.requestedByName, createdAt: r.createdAt,
+      },
+    });
+    await db.refund.update({ where: { id: r.id }, data: { approvalId: req.id } });
+  }
 
   const networks = ["Visa", "Mastercard", "Amex"];
   const reasonCodes = ["10.4 fraud", "13.1 not received", "13.3 not as described", "12.6 duplicate", "4853 goods not received"];

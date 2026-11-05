@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "setup": "prisma generate && prisma db push && tsx prisma/seed.ts"
+    "db:reset": "RESET=1 tsx prisma/seed.ts",
+    "setup": "node -e \"require('fs').existsSync('.env')||require('fs').copyFileSync('.env.example','.env')\" && prisma generate && prisma db push && tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
