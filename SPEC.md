@@ -182,6 +182,9 @@ The final recommendation must state the decision, the 2–3 deciding factors, th
 ---
 
 ## 7. Open questions for the client
+
+> We can't ask the client, so each question below is answered with a stated assumption in [`docs/cost-model.md`](docs/cost-model.md) and the evaluation tests how sensitive the result is to it.
+
 1. How many licensed users are there, and what's the split between engineers and ops/compliance/support? Who builds apps today?
 2. What's actually in the $250K: per-user vs. per-app licenses, Dataverse capacity, Power Automate, other M365 bundling?
 3. Which data sources do the apps touch (core DB, Salesforce, SharePoint, payment processor, KYC vendor)?
