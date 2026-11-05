@@ -98,6 +98,23 @@ curl "http://localhost:3000/api/flags/evaluate?key=instant_payouts&env=prod&subj
 Checks: `npm test` (Vitest: RBAC, hash chain, self-approval, rollout bucketing,
 dispute rules), `npm run typecheck`, `npm run lint`.
 
+## What end-to-end testing found
+
+After the build, Devin's testing agent ran the role walkthrough above in a real
+browser (recordings are in the session). Unit tests, typecheck and lint were green
+throughout; the browser run still found four defects, all fixed in follow-up commits:
+
+| Found | Fix |
+|---|---|
+| The tamper demo wasn't detected: the hash covered actor ID and role but not actor name | `computeHash` now includes `actorName`; regression test added |
+| Switching user while on a 403 page left stale content until reload | `switchUser` redirects to `/` |
+| One CSV export logged two `audit.exported` events (link prefetch hit the route) | Export link is a plain anchor |
+| Wide tables pushed the page past the viewport | Tables scroll inside their card |
+
+This is the honest version of "Devin builds it fast": generation took minutes,
+and the time that actually protects a fintech went into review and testing. Plan
+for that in the per-app estimate, as the cost model does.
+
 ## Deliberately not built
 
 Real OIDC, production hosting/backups/monitoring, secrets management, rate limiting,

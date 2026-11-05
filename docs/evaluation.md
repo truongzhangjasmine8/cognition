@@ -30,7 +30,7 @@ non-technical people, not an engineers' admin panel.
 | Role-based access | **Replicable, and better**: enforced server-side on every page and mutation, unit-tested | `rbac.ts`, 403s on direct URL access |
 | Audit trail | **Better**: hash-chained, tamper-evident, exportable, export itself audited | Audit page "tamper" demo |
 | Approvals | **Replicable, and better**: one queue for all apps, self-approval impossible by construction, tested | Refunds ≥ $500, prod flag changes, dispute write-offs |
-| Things Power Apps makes hard | **Only possible in code**: server-side PII masking by role, percentage rollouts with sticky bucketing, an SDK endpoint product services call, business rules as tested pure functions | `kyc/pii.ts`, `flags/sdk.ts`, 16 unit tests |
+| Things Power Apps makes hard | **Only possible in code**: server-side PII masking by role, percentage rollouts with sticky bucketing, an SDK endpoint product services call, business rules as tested pure functions | `kyc/pii.ts`, `flags/sdk.ts`, 17 unit tests |
 | SSO (Okta/Entra), MFA, conditional access | **Replicable, not built**: standard OIDC integration, ~1 week; the identity boundary is isolated for this | `auth.ts` |
 | Hosting, backups, monitoring, on-call | **Not replicable by Devin**: this becomes the team's job | Priced as infra + platform owner |
 | Compliance evidence (SOC 2 controls, access reviews, retention) | **Not replicable by Devin**: the controls have to be designed and evidenced by people; Devin can implement them | Priced as security spend |
