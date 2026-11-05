@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    String @id
+  name  String
+  email String @unique
+  role  String
+}
+
+// Append-only, hash-chained. Never updated or deleted by application code.
+model AuditEvent {
+  id         Int      @id @default(autoincrement())
+  actorId    String
+  actorName  String
+  actorRole  String
+  app        String
+  action     String
+  entityType String
+  entityId   String
+  before     String?
+  after      String?
+  prevHash   String
+  hash       String
+  createdAt  DateTime @default(now())
+
+  @@index([app, entityType, entityId])
+}
+
+model ApprovalRequest {
+  id              String    @id @default(cuid())
+  app             String
+  kind            String
+  entityType      String
+  entityId        String
+  summary         String
+  payload         String
+  requestedById   String
+  requestedByName String
+  status          String    @default("pending")
+  decidedById     String?
+  decidedByName   String?
+  decisionNote    String?
+  createdAt       DateTime  @default(now())
+  decidedAt       DateTime?
+
+  @@index([status])
+}
+
+model KycApplicant {
+  id           String   @id
+  fullName     String
+  email        String
+  dateOfBirth  String
+  nationalId   String
+  country      String
+  riskScore    Int
+  status       String   @default("pending")
+  assigneeId   String?
+  assigneeName String?
+  decisionNote String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Refund {
+  id              String   @id @default(cuid())
+  orderId         String
+  customerName    String
+  customerEmail   String
+  amountCents     Int
+  currency        String   @default("USD")
+  reason          String
+  status          String   @default("pending_approval")
+  requestedById   String
+  requestedByName String
+  approvalId      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model FeatureFlag {
+  id           String            @id @default(cuid())
+  key          String            @unique
+  description  String
+  environments FlagEnvironment[]
+  createdAt    DateTime          @default(now())
+}
+
+model FlagEnvironment {
+  id         String      @id @default(cuid())
+  flagId     String
+  env        String
+  enabled    Boolean     @default(false)
+  rolloutPct Int         @default(100)
+  flag       FeatureFlag @relation(fields: [flagId], references: [id], onDelete: Cascade)
+
+  @@unique([flagId, env])
+}
