@@ -103,3 +103,21 @@ model FlagEnvironment {
 
   @@unique([flagId, env])
 }
+
+model Chargeback {
+  id            String    @id
+  orderId       String
+  customerName  String
+  amountCents   Int
+  currency      String    @default("USD")
+  network       String
+  reasonCode    String
+  status        String    @default("open")
+  dueBy         DateTime
+  assigneeId    String?
+  assigneeName  String?
+  evidenceNote  String?
+  approvalId    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}

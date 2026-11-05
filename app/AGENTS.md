@@ -48,3 +48,9 @@ auth, permissions, auditing or approvals inside an app.
 - Tailwind utility classes; no new CSS files.
 - Keep each app to `page.tsx`, optional `[id]/page.tsx`, `actions.ts`, and
   `src/apps/<slug>/*.ts` for pure logic.
+
+## Gotcha
+
+After changing `prisma/schema.prisma`, restart `next dev`. The dev server keeps
+the previously generated Prisma client in memory, so new models appear as
+`undefined` until it restarts.

@@ -23,6 +23,7 @@ function pick<T>(arr: T[], i: number): T {
 async function main() {
   await db.auditEvent.deleteMany();
   await db.approvalRequest.deleteMany();
+  await db.chargeback.deleteMany();
   await db.refund.deleteMany();
   await db.kycApplicant.deleteMany();
   await db.flagEnvironment.deleteMany();
@@ -71,6 +72,24 @@ async function main() {
   });
   await db.refund.createMany({ data: refunds });
 
+  const networks = ["Visa", "Mastercard", "Amex"];
+  const reasonCodes = ["10.4 fraud", "13.1 not received", "13.3 not as described", "12.6 duplicate", "4853 goods not received"];
+  const cbStatuses = ["open", "open", "open", "evidence_submitted", "won", "lost", "accepted"];
+  const chargebacks = Array.from({ length: 12 }, (_, i) => ({
+    id: `CB-${7001 + i}`,
+    orderId: `ORD-${61000 + i * 7}`,
+    customerName: ["Ethan Silva", "Noah Osei", "Mia Chen", "Lucas Brown", "Zara Khan", "Leo Martin"][i % 6],
+    amountCents: [4500, 12900, 68000, 2300, 150000, 9900, 51000, 7800, 32000, 400, 215000, 18900][i],
+    network: networks[i % 3],
+    reasonCode: reasonCodes[i % 5],
+    status: cbStatuses[i % 7],
+    dueBy: new Date(Date.now() + (i - 3) * 2 * 86400000),
+    assigneeId: i % 3 === 0 ? "u_ana" : null,
+    assigneeName: i % 3 === 0 ? "Ana Torres" : null,
+    evidenceNote: cbStatuses[i % 7] === "open" ? null : "Delivery confirmation and signed receipt attached",
+  }));
+  await db.chargeback.createMany({ data: chargebacks });
+
   const flags = [
     { key: "instant_payouts", description: "Enable instant payouts for verified merchants" },
     { key: "new_kyc_flow", description: "Redesigned onboarding KYC flow" },
@@ -91,7 +110,7 @@ async function main() {
       },
     });
   }
-  console.log(`Seeded ${users.length} users, ${applicants.length} applicants, ${refunds.length} refunds, ${flags.length} flags`);
+  console.log(`Seeded ${users.length} users, ${applicants.length} applicants, ${refunds.length} refunds, ${flags.length} flags, ${chargebacks.length} chargebacks`);
 }
 
 main().finally(() => db.$disconnect());

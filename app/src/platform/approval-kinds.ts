@@ -2,3 +2,4 @@
 // apply each kind. New apps add one line here.
 import "@/apps/refunds/approvals";
 import "@/apps/flags/approvals";
+import "@/apps/disputes/approvals";
