@@ -14,6 +14,7 @@ export async function assignToMe(formData: FormData) {
     const user = await getCurrentUser();
     authorize(user, "kyc:assign");
     const before = await db.kycApplicant.findUniqueOrThrow({ where: { id } });
+    if (["approved", "rejected"].includes(before.status)) throw new Error(`Applicant is already ${before.status}; closed cases cannot be reassigned`);
     const after = await db.kycApplicant.update({
       where: { id },
       data: { assigneeId: user.id, assigneeName: user.name, status: before.status === "pending" ? "in_review" : before.status },

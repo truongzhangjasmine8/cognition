@@ -8,8 +8,8 @@ import { maskPII, riskTone } from "@/apps/kyc/pii";
 import { assignToMe, decide } from "../actions";
 
 export default async function ApplicantPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const [{ id }, sp] = await Promise.all([params, searchParams]);
   const user = await requireUser("kyc:view");
+  const [{ id }, sp] = await Promise.all([params, searchParams]);
   const raw = await db.kycApplicant.findUnique({ where: { id } });
   if (!raw) notFound();
   const a = maskPII(raw, user.role);

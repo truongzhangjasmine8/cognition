@@ -2,13 +2,14 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/platform/guard";
 import { can } from "@/platform/rbac";
 import { verifyAuditChain } from "@/platform/audit";
+import { DEMO_AUTH_ENABLED } from "@/platform/auth";
 import { Badge, Button, FlashBanner, LinkButton, PageHeader, Select, Table, Td, Th, when } from "@/platform/ui";
 import { readFlash } from "@/platform/flash";
 import { resetTamper, simulateTamper } from "./actions";
 
 export default async function AuditPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const sp = await searchParams;
   const user = await requireUser("audit:view");
+  const sp = await searchParams;
   const app = typeof sp.app === "string" ? sp.app : "";
   const [events, chain, apps] = await Promise.all([
     db.auditEvent.findMany({ where: app ? { app } : {}, orderBy: { id: "desc" }, take: 100 }),
@@ -30,7 +31,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
           <span className="font-medium">Chain integrity: {chain.ok ? "verified" : "BROKEN"}</span>
           <span className="ml-2 text-xs opacity-80">{chain.count} events checked{!chain.ok && ` · first bad event #${chain.brokenAtId} (${chain.reason})`}</span>
         </div>
-        {process.env.NODE_ENV !== "production" && (
+        {DEMO_AUTH_ENABLED && (
           <div className="flex gap-2">
             <form action={simulateTamper}><Button size="sm" variant="secondary">Demo: tamper with a row</Button></form>
             {!chain.ok && <form action={resetTamper}><Button size="sm" variant="secondary">Restore</Button></form>}

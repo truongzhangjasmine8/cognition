@@ -9,8 +9,8 @@ import { acceptLiability, assignDispute, recordOutcome, submitEvidence } from ".
 const STATUSES = ["open", "evidence_submitted", "pending_write_off", "won", "lost", "accepted"];
 
 export default async function DisputesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const sp = await searchParams;
   const user = await requireUser("disputes:view");
+  const sp = await searchParams;
   const status = typeof sp.status === "string" ? sp.status : "";
   const rows = await db.chargeback.findMany({ where: status ? { status } : {}, orderBy: { dueBy: "asc" } });
   const all = status ? await db.chargeback.findMany() : rows;

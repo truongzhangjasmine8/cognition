@@ -22,26 +22,29 @@ export async function requestRefund(formData: FormData) {
     if (!Number.isFinite(amount) || amount <= 0) throw new Error("Amount must be positive");
 
     const large = needsSecondApprover(amount);
-    const refund = await db.refund.create({
-      data: {
-        orderId, customerName, reason, amountCents: amount,
-        customerEmail: `${customerName.split(" ")[0].toLowerCase()}@mail.example`,
-        status: large ? "pending_approval" : "approved",
-        requestedById: user.id, requestedByName: user.name,
-      },
-    });
-    await recordAudit(user, { app: "refunds", action: "refund.requested", entityType: "Refund", entityId: refund.id, after: { orderId, amountCents: amount, status: refund.status } });
-
-    if (large) {
-      const req = await requestApproval(user, {
-        app: "refunds", kind: REFUND_APPROVAL_KIND, entityType: "Refund", entityId: refund.id,
-        summary: `Refund ${money(amount)} to ${customerName} (order ${orderId}): ${reason}`,
-        payload: { refundId: refund.id },
+    // Refund, approval request and audit events commit together or not at all.
+    await db.$transaction(async (tx) => {
+      const refund = await tx.refund.create({
+        data: {
+          orderId, customerName, reason, amountCents: amount,
+          customerEmail: `${customerName.split(" ")[0].toLowerCase()}@mail.example`,
+          status: large ? "pending_approval" : "approved",
+          requestedById: user.id, requestedByName: user.name,
+        },
       });
-      await db.refund.update({ where: { id: refund.id }, data: { approvalId: req.id } });
-      return `Refund of ${money(amount)} submitted. It needs a second approver because it is over the threshold.`;
-    }
-    return `Refund of ${money(amount)} approved automatically (under threshold).`;
+      await recordAudit(user, { app: "refunds", action: "refund.requested", entityType: "Refund", entityId: refund.id, after: { orderId, amountCents: amount, status: refund.status } }, tx);
+      if (large) {
+        const req = await requestApproval(user, {
+          app: "refunds", kind: REFUND_APPROVAL_KIND, entityType: "Refund", entityId: refund.id,
+          summary: `Refund ${money(amount)} to ${customerName} (order ${orderId}): ${reason}`,
+          payload: { refundId: refund.id },
+        }, tx);
+        await tx.refund.update({ where: { id: refund.id }, data: { approvalId: req.id } });
+      }
+    });
+    return large
+      ? `Refund of ${money(amount)} submitted. It needs a second approver because it is over the threshold.`
+      : `Refund of ${money(amount)} approved automatically (under threshold).`;
   });
 }
 

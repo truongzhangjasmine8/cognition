@@ -2,13 +2,14 @@ import "@/platform/approval-kinds";
 import { db } from "@/lib/db";
 import { requireUser } from "@/platform/guard";
 import { can } from "@/platform/rbac";
+import { canDecideKind } from "@/platform/approvals";
 import { Badge, Button, Callout, FlashBanner, Input, PageHeader, StatusBadge, Table, Td, Th, when } from "@/platform/ui";
 import { readFlash } from "@/platform/flash";
 import { decideAction } from "./actions";
 
 export default async function ApprovalsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const sp = await searchParams;
   const user = await requireUser("approvals:view");
+  const sp = await searchParams;
   const [pending, recent] = await Promise.all([
     db.approvalRequest.findMany({ where: { status: "pending" }, orderBy: { createdAt: "asc" } }),
     db.approvalRequest.findMany({ where: { status: { not: "pending" } }, orderBy: { decidedAt: "desc" }, take: 10 }),
@@ -24,6 +25,7 @@ export default async function ApprovalsPage({ searchParams }: { searchParams: Pr
       <Table head={<><Th>App</Th><Th>Request</Th><Th>Requested by</Th><Th>When</Th><Th>Decision</Th></>} empty={pending.length === 0}>
         {pending.map((r) => {
           const self = r.requestedById === user.id;
+          const eligible = canDecideKind(user, r);
           return (
             <tr key={r.id} className="align-top">
               <Td><Badge tone="blue">{r.app}</Badge><div className="mt-1 font-mono text-xs text-slate-500">{r.kind}</div></Td>
@@ -35,8 +37,8 @@ export default async function ApprovalsPage({ searchParams }: { searchParams: Pr
                   <form action={decideAction} className="flex items-center gap-2">
                     <input type="hidden" name="id" value={r.id} />
                     <div className="w-44"><Input name="note" placeholder="Note (optional)" /></div>
-                    <Button size="sm" name="decision" value="approved" disabled={self} title={self ? "You cannot approve your own request" : undefined}>Approve</Button>
-                    <Button size="sm" name="decision" value="rejected" variant="danger" disabled={self}>Reject</Button>
+                    <Button size="sm" name="decision" value="approved" disabled={!eligible} title={self ? "You cannot approve your own request" : !eligible ? "Your role cannot approve this kind of request" : undefined}>Approve</Button>
+                    <Button size="sm" name="decision" value="rejected" variant="danger" disabled={!eligible}>Reject</Button>
                   </form>
                 ) : <span className="text-xs text-slate-400">—</span>}
               </Td>

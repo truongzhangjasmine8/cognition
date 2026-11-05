@@ -7,8 +7,8 @@ import { ENVIRONMENTS } from "@/apps/flags/sdk";
 import { updateFlag } from "./actions";
 
 export default async function FlagsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const sp = await searchParams;
   const user = await requireUser("flags:view");
+  const sp = await searchParams;
   const flags = await db.featureFlag.findMany({ include: { environments: true }, orderBy: { key: "asc" } });
   const pendingProd = await db.approvalRequest.findMany({ where: { kind: "flag.prod_change", status: "pending" } });
   const canEdit = can(user.role, "flags:edit_nonprod");

@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import type { CurrentUser } from "./auth";
 import { GENESIS_HASH, computeHash, verifyChain } from "./audit-core";
 
@@ -17,8 +18,15 @@ function serialize(v: unknown): string | null {
 
 // Every mutation in every app goes through here. The event is chained to the
 // previous one so edits to history are detectable (see verifyAuditChain).
-export async function recordAudit(user: CurrentUser, input: AuditInput) {
-  return db.$transaction(async (tx) => {
+export type DbClient = Prisma.TransactionClient;
+
+export async function recordAudit(user: CurrentUser, input: AuditInput, tx?: DbClient) {
+  if (tx) return writeEvent(tx, user, input);
+  return db.$transaction((t) => writeEvent(t, user, input));
+}
+
+async function writeEvent(tx: DbClient, user: CurrentUser, input: AuditInput) {
+  {
     const last = await tx.auditEvent.findFirst({ orderBy: { id: "desc" }, select: { hash: true } });
     const prevHash = last?.hash ?? GENESIS_HASH;
     const payload = {
@@ -34,7 +42,7 @@ export async function recordAudit(user: CurrentUser, input: AuditInput) {
       createdAt: new Date(),
     };
     return tx.auditEvent.create({ data: { ...payload, prevHash, hash: computeHash(prevHash, payload) } });
-  });
+  }
 }
 
 export async function verifyAuditChain() {

@@ -7,8 +7,8 @@ import { REFUND_APPROVAL_THRESHOLD_CENTS } from "@/apps/refunds/rules";
 import { markProcessed, requestRefund } from "./actions";
 
 export default async function RefundsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const sp = await searchParams;
   const user = await requireUser("refunds:view");
+  const sp = await searchParams;
   const refunds = await db.refund.findMany({ orderBy: { createdAt: "desc" } });
   const sum = (s: string) => refunds.filter((r) => r.status === s).reduce((t, r) => t + r.amountCents, 0);
   const count = (s: string) => refunds.filter((r) => r.status === s).length;
