@@ -19,6 +19,7 @@ export function computeHash(prevHash: string, p: AuditPayload): string {
   const body = JSON.stringify([
     prevHash,
     p.actorId,
+    p.actorName,
     p.actorRole,
     p.app,
     p.action,

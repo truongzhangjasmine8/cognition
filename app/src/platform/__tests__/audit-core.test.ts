@@ -36,4 +36,11 @@ describe("audit hash chain", () => {
     c[0].actorRole = "agent";
     expect(verifyChain(c).ok).toBe(false);
   });
+  it("detects a renamed actor", () => {
+    const c = chain(3);
+    c[1].actorName = "Someone Else";
+    const r = verifyChain(c);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.brokenAtId).toBe(2);
+  });
 });

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Flash } from "../flash";
 
@@ -81,9 +80,9 @@ export function Button({ children, variant = "primary", size = "md", type = "sub
 export function LinkButton({ href, children, variant = "secondary" }: { href: string; children: ReactNode; variant?: "primary" | "secondary" }) {
   const cls = variant === "primary" ? "bg-slate-900 text-white hover:bg-slate-700" : "border border-slate-300 bg-white text-slate-800 hover:bg-slate-50";
   return (
-    <Link href={href} className={`inline-flex items-center rounded-md px-3.5 py-2 text-sm font-medium ${cls}`}>
+    <a href={href} className={`inline-flex items-center rounded-md px-3.5 py-2 text-sm font-medium ${cls}`}>
       {children}
-    </Link>
+    </a>
   );
 }
 
@@ -113,7 +112,7 @@ export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
 
 export function Table({ head, children, empty }: { head: ReactNode; children: ReactNode; empty?: boolean }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
       <table className="w-full text-sm">
         <thead className="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
           <tr>{head}</tr>
