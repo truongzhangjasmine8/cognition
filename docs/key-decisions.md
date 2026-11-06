@@ -1,4 +1,4 @@
-# Key decisions (one page)
+# Key decisions One Pager
 
 **What I built.** One Next.js/Prisma app hosting four internal tools on a shared
 platform layer: a swappable identity boundary, server-side RBAC, a hash-chained
