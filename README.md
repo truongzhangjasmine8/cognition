@@ -74,11 +74,12 @@ Requires Node 20+.
 ```bash
 cd app
 npm install
-npm run setup     # creates .env from .env.example, prisma generate + db push (SQLite), seeds if empty
 npm run dev       # http://localhost:3000
 ```
 
-`npm run setup` is safe to re-run after schema changes: it keeps existing data.
+`npm run dev` runs `npm run setup` first (creates `.env` from `.env.example`,
+`prisma generate` + `db push` on SQLite, seeds synthetic data if the database is
+empty). `setup` is safe to re-run after schema changes: it keeps existing data.
 `npm run db:reset` wipes and reseeds. The cookie-based demo identity refuses to
 run with `NODE_ENV=production` unless `ALLOW_DEMO_AUTH=1` is set, so a build can't
 be deployed with the user switcher by accident.

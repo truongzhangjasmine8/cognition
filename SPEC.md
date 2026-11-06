@@ -1,5 +1,11 @@
 # Spec: Build vs. Buy for Internal Tools — Devin vs. Microsoft Power Apps
 
+> **Status: delivered.** Outcome: recommend a full migration to a Devin-built code
+> platform timed to the Power Apps renewal, conditional on continued ops headcount
+> growth. See [`README.md`](README.md) for the prototype, [`docs/evaluation.md`](docs/evaluation.md)
+> for the analysis and [`docs/key-decisions.md`](docs/key-decisions.md) for the
+> one-pager. Deviations from this spec are noted inline in *italics*.
+
 ## 1. Context
 
 | | |
@@ -78,7 +84,7 @@ Power Apps' advantage for "10 more apps" is that each new app gets auth, RBAC, a
 | **KYC review queue** | Queue of applicants, filter by status/risk, assign to self, approve/reject/escalate with reason, PII masked unless role permits, every decision audited |
 | **Refunds dashboard** | List and search refunds; agents request refunds; refunds above a threshold (e.g. $500) **require a second approver** (P4); totals by status |
 | **Feature-flag admin** | Flags per environment; toggle/percentage rollout; **prod changes require approval**; change history from the audit log |
-| **New tool built live by Devin** (stretch / demo) | e.g. "Chargeback dispute tracker" or "Vendor payout approvals", built from a one-paragraph prompt using only platform primitives. Record elapsed time and number of human interventions |
+| **New tool built live by Devin** (stretch / demo) | e.g. "Chargeback dispute tracker" or "Vendor payout approvals", built from a one-paragraph prompt using only platform primitives. Record elapsed time and number of human interventions. *Done: Chargeback Disputes, one turn, ~1.5 min generation, one environment hiccup; see README.* |
 
 ### 3.4 Non-functional requirements
 - Runs locally with one command (`npm install && npm run dev`) and seeds demo data.
@@ -112,6 +118,7 @@ cognition/
         └── <new-tool>/     # built live by Devin
 ```
 - **Stack:** Next.js (App Router) + TypeScript, Prisma, SQLite (dev) / Postgres (prod), Tailwind + shadcn/ui, Vitest.
+  *As built: the app lives in `app/` (root keeps docs and the cost model); plain Tailwind with a small in-repo UI kit instead of shadcn/ui; tables filter but do not sort or paginate, and detail views are pages rather than drawers.*
 - **Why one monorepo/one deployable:** shared auth, RBAC and audit come for free to every new app, mirroring the platform benefit of Power Apps. It also keeps a 2-hour build realistic.
 - **Why code-first instead of a config-driven builder:** Devin's leverage comes from writing ordinary code that engineers can review. A homegrown low-code builder would be a second platform to maintain.
 
@@ -146,9 +153,9 @@ Also deliver a **replicability matrix** with three buckets: *easily replicable w
 
 ---
 
-## 5. Recommendation (to be finalized after the evaluation)
+## 5. Recommendation
 
-Working hypothesis to test, not a conclusion: **neither full option is obviously right**. Possible outcomes:
+*Final: **Build** (full migration at renewal) with the conditions in [`docs/evaluation.md`](docs/evaluation.md) §4. The 5-year model shows build cheaper from year 3 at 30% user growth and Power Apps cheaper under flat headcount.* The options considered were:
 - **Buy (stay):** if most licensed users are non-engineers who build or modify apps themselves, or if Microsoft's compliance and identity integration is doing heavy lifting for audits.
 - **Build:** if apps are built only by engineers, need deep integration with internal services, and the team will fund a small platform owner (~0.5–1 FTE) for auth, audit, hosting and upgrades.
 - **Hybrid / phased:** keep Power Apps for existing and simple CRUD apps while building the next 1–2 complex, integration-heavy tools on a code platform with Devin. Then measure real build and maintenance cost before migrating anything or cancelling licenses.

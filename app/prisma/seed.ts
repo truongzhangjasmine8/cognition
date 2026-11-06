@@ -72,8 +72,8 @@ async function main() {
       amountCents: amount,
       reason: ["Duplicate charge", "Service not delivered", "Customer dispute", "Pricing error"][i % 4],
       status: amount < 50000 && status === "pending_approval" ? "approved" : status,
-      requestedById: i % 2 ? "u_ana" : "u_marco",
-      requestedByName: i % 2 ? "Ana Torres" : "Marco Rossi",
+      requestedById: i % 3 === 0 ? "u_marco" : "u_ana",
+      requestedByName: i % 3 === 0 ? "Marco Rossi" : "Ana Torres",
       createdAt: new Date(Date.now() - i * 3600_000 * 9),
     };
   });
