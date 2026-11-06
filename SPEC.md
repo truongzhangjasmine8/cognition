@@ -47,9 +47,9 @@ Group the research into four areas. For each, record what it is, why it matters 
 - **Key hypothesis to check:** at typical list prices, $250K/year implies **hundreds to ~1,000 licensed users**. That means the users are mostly **ops, compliance and support staff, not the 60 engineers**. This changes the analysis: whatever replaces Power Apps has to serve non-technical users, and those users may currently be *building* apps themselves.
 
 ### 2.5 Research outputs
-- [ ] A one-paragraph "what Power Apps is" summary for the video
-- [ ] The top 5 capabilities that matter for this client, ranked
-- [ ] Open questions for the client (see §7)
+- [x] A one-paragraph "what Power Apps is" summary for the video (*[`docs/evaluation.md`](docs/evaluation.md) §1, [`docs/loom-outline.md`](docs/loom-outline.md)*)
+- [x] The top 5 capabilities that matter for this client, ranked (*[`docs/evaluation.md`](docs/evaluation.md) §1*)
+- [x] Open questions for the client (see §7) (*answered as stated assumptions in [`docs/cost-model.md`](docs/cost-model.md)*)
 
 ---
 
@@ -63,14 +63,14 @@ Power Apps' advantage for "10 more apps" is that each new app gets auth, RBAC, a
 
 1. **A shared internal-tools foundation** (the "platform")
 2. **2–3 apps built on it** that mirror the client's existing apps
-3. **A repeatable "new tool" workflow for Devin** (repo conventions + playbook) that we demo live
+3. **A repeatable "new tool" workflow for Devin** (repo conventions + playbook) that we demo live. *As built: conventions in [`app/AGENTS.md`](app/AGENTS.md); playbook as a repo skill in [`.devin/skills/add-internal-tool/SKILL.md`](.devin/skills/add-internal-tool/SKILL.md)*
 
 ### 3.3 Functional requirements
 
 **Platform layer (shared by every app)**
 | # | Capability | Power Apps equivalent | Prototype implementation |
 |---|---|---|---|
-| P1 | Authentication | Entra ID SSO | OIDC-ready auth (NextAuth/Auth.js). Dev mode uses a **user/role switcher** so the demo doesn't need an IdP |
+| P1 | Authentication | Entra ID SSO | OIDC-ready auth (NextAuth/Auth.js). Dev mode uses a **user/role switcher** so the demo doesn't need an IdP. *As built: no Auth.js yet; a cookie-based demo identity isolated in `app/src/platform/auth.ts` (the only file an OIDC session would replace), disabled under `NODE_ENV=production`* |
 | P2 | Role-based access control | Security roles, sharing | Declarative `role → permissions` map per app; enforced **server-side** on every action, not only hidden in the UI |
 | P3 | Audit log | Dataverse auditing | Append-only `audit_events` table (actor, action, entity, before/after, timestamp) written by a shared server wrapper; viewer page |
 | P4 | Maker-checker approvals | Power Automate approvals | Generic approval primitive: a request is created by A and must be approved by B ≠ A; threshold-based |

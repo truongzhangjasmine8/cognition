@@ -66,6 +66,10 @@ commit log:
   review, budget 15–30 minutes per tool of this shape, and ~1 engineer-day including
   UAT with the ops team. That is the figure used in the cost model (1.25 eng-weeks
   per app including spec, review and UAT, deliberately conservative).
+- The steps are packaged as a Devin skill (playbook),
+  [`.devin/skills/add-internal-tool/SKILL.md`](.devin/skills/add-internal-tool/SKILL.md):
+  the inputs to ask for, a 12-step procedure ending in a role-by-role browser check
+  and a PR, and what not to touch. App #5 onward starts from it.
 
 ## Run it
 
