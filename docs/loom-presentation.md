@@ -1,7 +1,5 @@
 # Build vs. buy: replacing Power Apps with Devin
 
-*For the VP of Engineering. About 5 minutes. Scroll top to bottom; the italic "Say" lines are talking points.*
-
 ---
 
 ## 1. What Power Apps really gives you
