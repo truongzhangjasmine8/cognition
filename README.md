@@ -141,9 +141,3 @@ data retention, a drag-and-drop builder for ops staff, and compliance evidence
 (SOC 2 controls, access reviews). These are the real cost of building and are
 priced into the cost model as platform-owner time and infra/security spend, and
 discussed as risks in [`docs/evaluation.md`](docs/evaluation.md).
-
-## Time spent
-
-Research and cost model ~1h; prototype ~2h (platform ~50 min, three apps ~55 min,
-AGENTS.md + timed demo ~15 min); write-up ~45 min. All code was written by Devin
-from the plan agreed in chat.
