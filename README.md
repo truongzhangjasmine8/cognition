@@ -66,6 +66,10 @@ commit log:
   review, budget 15–30 minutes per tool of this shape, and ~1 engineer-day including
   UAT with the ops team. That is the figure used in the cost model (1.25 eng-weeks
   per app including spec, review and UAT, deliberately conservative).
+- The steps are packaged as a Devin skill (playbook),
+  [`.devin/skills/add-internal-tool/SKILL.md`](.devin/skills/add-internal-tool/SKILL.md):
+  the inputs to ask for, a 12-step procedure ending in a role-by-role browser check
+  and a PR, and what not to touch. App #5 onward starts from it.
 
 ## Run it
 
@@ -74,9 +78,15 @@ Requires Node 20+.
 ```bash
 cd app
 npm install
-npm run setup     # prisma generate + db push (SQLite) + seed synthetic data
 npm run dev       # http://localhost:3000
 ```
+
+`npm run dev` runs `npm run setup` first (creates `.env` from `.env.example`,
+`prisma generate` + `db push` on SQLite, seeds synthetic data if the database is
+empty). `setup` is safe to re-run after schema changes: it keeps existing data.
+`npm run db:reset` wipes and reseeds. The cookie-based demo identity refuses to
+run with `NODE_ENV=production` unless `ALLOW_DEMO_AUTH=1` is set, so a build can't
+be deployed with the user switcher by accident.
 
 Use the **Switch user (demo SSO)** dropdown in the sidebar to change role:
 
@@ -114,6 +124,15 @@ throughout; the browser run still found four defects, all fixed in follow-up com
 This is the honest version of "Devin builds it fast": generation took minutes,
 and the time that actually protects a fintech went into review and testing. Plan
 for that in the per-app estimate, as the cost model does.
+
+A Devin Review pass on the merged PR then found a second layer the browser test
+could not see, fixed in a follow-up PR: approval decisions were not atomic (two
+approvers at once could leave a refund and its request disagreeing), refund and
+dispute requests were not transactional, the approvals page offered buttons to
+approvers who lacked the kind's permission, closed cases could be reassigned,
+masked applicants still showed full names, CSV export did not neutralise
+spreadsheet formulas, and re-running setup wiped data. Same lesson, sharper:
+generation is cheap, review is the work.
 
 ## Deliberately not built
 

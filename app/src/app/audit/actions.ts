@@ -4,12 +4,17 @@ import { db } from "@/lib/db";
 import { getCurrentUser } from "@/platform/auth";
 import { authorize } from "@/platform/rbac";
 import { withFlash } from "@/platform/flash";
+import { DEMO_AUTH_ENABLED } from "@/platform/auth";
+
+function assertDemoMode() {
+  if (!DEMO_AUTH_ENABLED) throw new Error("Disabled outside demo mode");
+}
 
 // Demo only: edits a historical row directly in the database, the way a DBA or
 // attacker with DB access would. The chain verification on the page catches it.
 export async function simulateTamper() {
   return withFlash("/audit", async () => {
-    if (process.env.NODE_ENV === "production") throw new Error("Disabled in production");
+    assertDemoMode();
     const user = await getCurrentUser();
     authorize(user, "audit:view");
     const victim = await db.auditEvent.findFirst({ where: { action: { contains: "approved" } }, orderBy: { id: "asc" } });
@@ -21,6 +26,7 @@ export async function simulateTamper() {
 
 export async function resetTamper() {
   return withFlash("/audit", async () => {
+    assertDemoMode();
     const user = await getCurrentUser();
     authorize(user, "audit:view");
     const victims = await db.auditEvent.findMany({ where: { actorName: "Someone Else" } });

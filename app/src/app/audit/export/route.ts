@@ -3,8 +3,10 @@ import { getCurrentUser } from "@/platform/auth";
 import { can } from "@/platform/rbac";
 import { recordAudit } from "@/platform/audit";
 
-function csv(v: unknown): string {
-  const s = v == null ? "" : String(v);
+export function csv(v: unknown): string {
+  let s = v == null ? "" : String(v);
+  // Spreadsheets treat leading = + - @ (and tab/CR) as formulas; prefix with a quote so they stay text.
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 

@@ -89,6 +89,18 @@ on the product. The model prices this at loaded cost ($220K/year), but the hones
 version is: the plan only works if the platform owner is a real headcount decision,
 not a side project for a product team. Devin lowers the hours, not the ownership.
 
+**Lock-in and exit.** Leaving Power Apps later means re-implementing every app:
+canvas apps and Power Fx do not export to anything else, Dataverse data exports but
+its security model, business rules and audit history do not, and Power Automate
+flows have to be rewritten. The cost of leaving grows with every app added, which
+is the argument for deciding now rather than after app #13. Leaving the code
+platform later is cheaper: it is ordinary TypeScript, Postgres and OIDC, so a
+different team, vendor or hosting target can take it over, and the audit history
+is a plain table with verifiable hashes. The real lock-in on the build side is to
+the person who owns it (bus factor), not to a vendor. Devin itself is not a
+lock-in: the output is code the team owns and can keep maintaining with or
+without it.
+
 ## 4. Recommendation: migrate fully, timed to renewal, with conditions
 
 **Build.** For a Series C company that expects ops headcount to keep growing, a

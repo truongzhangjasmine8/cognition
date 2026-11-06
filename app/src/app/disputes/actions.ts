@@ -18,6 +18,7 @@ export async function assignDispute(formData: FormData) {
     const user = await getCurrentUser();
     authorize(user, "disputes:work");
     const before = await db.chargeback.findUniqueOrThrow({ where: { id } });
+    if (!["open", "evidence_submitted"].includes(before.status)) throw new Error(`Dispute is ${before.status}; closed cases cannot be reassigned`);
     await db.chargeback.update({ where: { id }, data: { assigneeId: user.id, assigneeName: user.name } });
     await recordAudit(user, { app: APP, action: "dispute.assigned", entityType: "Chargeback", entityId: id, before: { assignee: before.assigneeName }, after: { assignee: user.name } });
     return `Assigned ${id} to you`;
@@ -62,12 +63,15 @@ export async function acceptLiability(formData: FormData) {
     const cb = await db.chargeback.findUniqueOrThrow({ where: { id } });
     if (cb.status !== "open") throw new Error(`Dispute is ${cb.status}, not open`);
     if (needsWriteOffApproval(cb.amountCents)) {
-      const req = await requestApproval(user, {
-        app: APP, kind: DISPUTE_WRITE_OFF_KIND, entityType: "Chargeback", entityId: id,
-        summary: `Accept chargeback ${id} for ${money(cb.amountCents)} (${cb.network} ${cb.reasonCode}, ${cb.customerName})`,
-        payload: { chargebackId: id },
+      await db.$transaction(async (tx) => {
+        const req = await requestApproval(user, {
+          app: APP, kind: DISPUTE_WRITE_OFF_KIND, entityType: "Chargeback", entityId: id,
+          summary: `Accept chargeback ${id} for ${money(cb.amountCents)} (${cb.network} ${cb.reasonCode}, ${cb.customerName})`,
+          payload: { chargebackId: id },
+        }, tx);
+        await tx.chargeback.update({ where: { id }, data: { status: "pending_write_off", approvalId: req.id } });
+        await recordAudit(user, { app: APP, action: "dispute.write_off_requested", entityType: "Chargeback", entityId: id, before: { status: "open" }, after: { status: "pending_write_off", approvalId: req.id } }, tx);
       });
-      await db.chargeback.update({ where: { id }, data: { status: "pending_write_off", approvalId: req.id } });
       return `${id} is ${money(cb.amountCents)}; write-off sent to Finance for approval`;
     }
     await db.chargeback.update({ where: { id }, data: { status: "accepted" } });

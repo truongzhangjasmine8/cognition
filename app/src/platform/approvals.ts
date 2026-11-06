@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import type { CurrentUser } from "./auth";
-import { authorize, type Permission } from "./rbac";
-import { recordAudit } from "./audit";
+import { authorize, can, type Permission } from "./rbac";
+import { recordAudit, type DbClient } from "./audit";
 
 export class SelfApprovalError extends Error {
   constructor() {
@@ -28,12 +28,22 @@ export function registerApprovalKind(kind: string, def: ApprovalKind) {
   registry.set(kind, def);
 }
 
+export function approvalKindPermission(kind: string): Permission | undefined {
+  return registry.get(kind)?.permission;
+}
+
+export function canDecideKind(user: { id: string; role: string }, req: { kind: string; requestedById: string }): boolean {
+  const perm = approvalKindPermission(req.kind);
+  return !!perm && can(user.role, "approvals:decide") && can(user.role, perm) && req.requestedById !== user.id;
+}
+
 export async function requestApproval(
   user: CurrentUser,
   input: { app: string; kind: string; entityType: string; entityId: string; summary: string; payload: unknown },
+  tx: DbClient = db,
 ) {
   if (!registry.has(input.kind)) throw new Error(`Unknown approval kind ${input.kind}`);
-  const req = await db.approvalRequest.create({
+  const req = await tx.approvalRequest.create({
     data: {
       app: input.app,
       kind: input.kind,
@@ -51,7 +61,7 @@ export async function requestApproval(
     entityType: "ApprovalRequest",
     entityId: req.id,
     after: { kind: input.kind, summary: input.summary, target: `${input.entityType}:${input.entityId}` },
-  });
+  }, tx);
   return req;
 }
 
@@ -64,14 +74,19 @@ export async function decideApproval(user: CurrentUser, id: string, decision: "a
   assertNotSelfApproval(req.requestedById, user.id);
   if (req.status !== "pending") throw new Error("Request already decided");
 
+  // Claim the request atomically so two approvers deciding at once cannot both
+  // run the side effects; the first conditional update wins.
+  const claimed = await db.approvalRequest.updateMany({
+    where: { id, status: "pending" },
+    data: { status: decision, decidedById: user.id, decidedByName: user.name, decisionNote: note, decidedAt: new Date() },
+  });
+  if (claimed.count === 0) throw new Error("Request already decided");
+
   const payload = JSON.parse(req.payload);
   if (decision === "approved") await def.onApproved(payload, user);
   else await def.onRejected?.(payload, user);
 
-  const updated = await db.approvalRequest.update({
-    where: { id },
-    data: { status: decision, decidedById: user.id, decidedByName: user.name, decisionNote: note, decidedAt: new Date() },
-  });
+  const updated = await db.approvalRequest.findUniqueOrThrow({ where: { id } });
   await recordAudit(user, {
     app: req.app,
     action: `approval.${decision}`,

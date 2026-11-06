@@ -8,8 +8,8 @@ import { maskPII, riskTone } from "@/apps/kyc/pii";
 const STATUSES = ["pending", "in_review", "escalated", "approved", "rejected"];
 
 export default async function KycPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const sp = await searchParams;
   const user = await requireUser("kyc:view");
+  const sp = await searchParams;
   const status = typeof sp.status === "string" ? sp.status : "";
   const risk = typeof sp.risk === "string" ? sp.risk : "";
   const mine = sp.mine === "1";

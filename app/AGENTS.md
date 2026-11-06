@@ -51,6 +51,6 @@ auth, permissions, auditing or approvals inside an app.
 
 ## Gotcha
 
-After changing `prisma/schema.prisma`, restart `next dev`. The dev server keeps
+After changing `prisma/schema.prisma` or running `npm run db:reset`, restart `next dev`. The dev server keeps
 the previously generated Prisma client in memory, so new models appear as
 `undefined` until it restarts.
